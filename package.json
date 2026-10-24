@@ -1,0 +1,18 @@
+{
+  "name": "airslide",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Change web slides by swinging an AirPod: a native macOS controller and a tiny WebSocket relay.",
+  "license": "MIT",
+  "repository": "github:Tarabcak/airslide",
+  "scripts": {
+    "start": "node relay/server.cjs",
+    "test": "node --test relay/server.test.cjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
+  }
+}

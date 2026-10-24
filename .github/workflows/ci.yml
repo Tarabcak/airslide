@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  relay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/test-mac.sh
+      - run: bash scripts/build-mac.sh
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t airslide-relay .
+      - name: Relay container answers
+        run: |
+          docker run -d --name relay -p 8080:8080 -e REMOTE_TOKEN="$(openssl rand -hex 32)" airslide-relay
+          for attempt in $(seq 1 20); do
+            if curl -fs http://127.0.0.1:8080/healthz && curl -fs http://127.0.0.1:8080/ | grep -q '/_airslide/client.js'; then exit 0; fi
+            sleep 1
+          done
+          docker logs relay
+          exit 1
